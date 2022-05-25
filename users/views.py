@@ -132,7 +132,6 @@ class TaskDetailApiView(UpdateAPIView):
         if user:
             serializer = self.get_serializer(
                 instance, data=request.data, partial=True)
-
             if serializer.is_valid():
                 serializer.save()
                 return HttpResponse("updated successfully")
@@ -147,9 +146,7 @@ class TaskDeleteApiView(DestroyAPIView):
     def delete(self, request, *args, **kwargs):
         user = UserType.objects.filter(
             user_type='Manager', user__username=self.request.user.username)
-
         if user:
             return super().delete(request, *args, **kwargs)
-
         else:
             return HttpResponse('Only manager can delete')

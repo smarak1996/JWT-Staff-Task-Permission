@@ -8,7 +8,8 @@ urlpatterns = [
     path('logout/', views.LogoutView.as_view()),
     path('user/', views.UserTypeApiView.as_view(), name='user'),
     path('task/', views.TaskListApiView.as_view(), name='task'),
-    path('task/<int:pk>/', views.TaskDetailApiView.as_view(), name='task_detail'),
+    #path('task/<int:pk>/', views.TaskDetailApiView.as_view(), name='task_detail'),
+    #path('task/<int:pk>/', views.TaskDeleteApiView.as_view(), name='task_delete'),
 
 
 ]
