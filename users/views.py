@@ -1,6 +1,7 @@
 
+from functools import partial
 from django.shortcuts import render
-from rest_framework.generics import GenericAPIView, ListCreateAPIView
+from rest_framework.generics import GenericAPIView, ListCreateAPIView, UpdateAPIView, DestroyAPIView
 from .models import User, UserType, Task
 from users.serializers import UserSerializer, UserTypeSerializer, TaskSerailizer
 from rest_framework.response import Response
@@ -93,19 +94,6 @@ class UserTypeApiView(ListCreateAPIView):
     queryset = UserType.objects.all()
     serializer_class = UserTypeSerializer
 
-    # def create(self, validated_data):
-    #     print("0000000000000000000000000")
-    #     if self.request.user.is_staff == True:
-    #         register = UserType.objects.create(
-    #             user=validated_data["user"],
-    #             user_type=validated_data["user_type"]
-
-    #         )
-    #         register.save()
-    #         return register
-    #     else:
-    #         return HttpResponse('not valid user for creating usertype')
-
 
 class TaskListApiView(ListCreateAPIView):
     queryset = Task.objects.all()
@@ -115,7 +103,7 @@ class TaskListApiView(ListCreateAPIView):
         print(self.request.user)
         print("00000000000000000000000000000000")
         user = UserType.objects.filter(
-            user_type='Client', user=self.request.user)
+            user_type='Client', user__username=self.request.user.username)
         print(user)
         if user:
             task = Task.objects.create(
@@ -128,3 +116,40 @@ class TaskListApiView(ListCreateAPIView):
             return task
         else:
             return HttpResponse('This user cannot create task')
+
+
+class TaskDetailApiView(UpdateAPIView):
+    queryset = Task.objects.all()
+    serializer_class = TaskSerailizer
+    lookup_field = 'pk'
+
+    def update(self, request, *args, **kwargs):
+        instance = self.get_object()
+        print('dddddddddddddd')
+        user = UserType.objects.filter(
+            user_type='Employee', user__username=self.request.user.username)
+
+        if user:
+            serializer = self.get_serializer(
+                instance, data=request.data, partial=True)
+
+            if serializer.is_valid():
+                serializer.save()
+                return HttpResponse("updated successfully")
+        else:
+            return HttpResponse('This user cannot complete task')
+
+
+class TaskDeleteApiView(DestroyAPIView):
+    queryset = Task.objects.all()
+    serializer_class = TaskSerailizer
+
+    def delete(self, request, *args, **kwargs):
+        user = UserType.objects.filter(
+            user_type='Manager', user__username=self.request.user.username)
+
+        if user:
+            return super().delete(request, *args, **kwargs)
+
+        else:
+            return HttpResponse('Only manager can delete')
